@@ -34,10 +34,10 @@ class _LoginViewState extends State<LoginView> {
               switch (state) {
                 case AuthInitialState():
                   // TODO: Handle this case.
-                  throw UnimplementedError();
+                  return;
                 case AuthLoadingState():
                   // TODO: Handle this case.
-                  throw UnimplementedError();
+                  return;
                 case AuthSuccessState():
                  Navigator.pushReplacement(
                   context,

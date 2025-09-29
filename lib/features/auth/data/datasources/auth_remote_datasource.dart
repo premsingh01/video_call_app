@@ -1,9 +1,15 @@
 
+
+
+import 'package:video_call_app/core/network/api_client.dart';
+
 abstract class AuthRemoteDatasource {
   Future<bool> login({required String email, required String password});
 }
 
 class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
+  final ApiClient apiClient;
+  const AuthRemoteDatasourceImpl({required this.apiClient});
 
   final _mockEmail = 'test@example.com';
   final _mockPassword = 'password123';

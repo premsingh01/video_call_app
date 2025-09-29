@@ -33,7 +33,7 @@ class _DashboardViewState extends State<DashboardView> {
               return const SizedBox.shrink();
             case DashboardSuccessState():
               return Scaffold(
-                body: IndexedStack(index: state.index, children: _pages),
+                body: _pages.elementAt(state.index), //IndexedStack(index: state.index, children: _pages),
                 bottomNavigationBar: BottomNavigationBar(
                   currentIndex: state.index,
                   selectedItemColor: Colors.red,
