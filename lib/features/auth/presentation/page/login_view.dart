@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:video_call_app/features/auth/data/datasources/auth_remote_datasource.dart';
-import 'package:video_call_app/features/auth/data/repository_impl/auth_repository_impl.dart';
-import 'package:video_call_app/features/auth/domain/usecase/auth_usecase.dart';
 import 'package:video_call_app/features/auth/presentation/bloc/auth_cubit.dart';
 import 'package:video_call_app/features/auth/presentation/bloc/auth_state.dart';
+import 'package:video_call_app/features/dashboard/presentation/page/dashboard_view.dart';
+import 'package:video_call_app/service_locator.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
@@ -23,7 +22,7 @@ class _LoginViewState extends State<LoginView> {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => AuthCubit(authUsecase: AuthUsecase(authRepository: AuthRepositoryImpl(authRemoteDatasource: AuthRemoteDatasourceImpl()))),
+      create: (_) =>  sl<AuthCubit>(),
       child: Scaffold(
         appBar: AppBar(
           title: Text("Login"),
@@ -40,13 +39,10 @@ class _LoginViewState extends State<LoginView> {
                   // TODO: Handle this case.
                   throw UnimplementedError();
                 case AuthSuccessState():
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text("AUTHENTICATION SUCCESS")),
+                 Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (_) => const DashboardView()),
                 );
-                //  Navigator.pushReplacement(
-                //   context,
-                //   MaterialPageRoute(builder: (_) => const VideoCallScreen()),
-                // );
                 case AuthFailureState():
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text(state.message)),
