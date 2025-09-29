@@ -1,7 +1,7 @@
+import 'package:oxidized/oxidized.dart';
 import 'package:video_call_app/core/utils/check_network_utility.dart';
 import 'package:video_call_app/features/user/data/datasources/users_local_datasource.dart';
 import 'package:video_call_app/features/user/data/datasources/users_remote_datasource.dart';
-import 'package:video_call_app/features/user/data/model/users_model.dart';
 import 'package:video_call_app/features/user/domain/entity/users_entity.dart';
 import 'package:video_call_app/features/user/domain/repository/users_repository.dart';
 
@@ -17,13 +17,15 @@ class UsersRepositoryImpl implements UsersRepository {
   });
 
   @override
-  Future<List<UsersEntity>> users() async {
+  Future<Result<UsersEntity, Err>> users() async {
     final hasNet = await checkNetworkUtility.hasNetwork();
 
     if (hasNet) {
       // Try remote API
-      final List<UsersModel> remoteResult = await usersRemoteDatasource.getUsers();
-      return remoteResult;
+      final remoteResult = await Result.asyncOf<UsersEntity, Err>(() => usersRemoteDatasource.getUsers());
+      if(remoteResult.isOk()) {
+        return remoteResult;
+      }
 
       // if (remoteResult.isOk()) {
       //   // Cache for offline use, then return
@@ -35,7 +37,7 @@ class UsersRepositoryImpl implements UsersRepository {
     }
 
     // If no internet or remote failed → fallback to local DB
-    final List<UsersModel> localResult = await usersLocalDatasource.getUsers();
+    final localResult = await Result.asyncOf<UsersEntity, Err>(() => usersLocalDatasource.getUsers());
     return localResult;
   }
 }

@@ -105,6 +105,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.1"
+  equatable:
+    dependency: transitive
+    description:
+      name: equatable
+      sha256: "567c64b3cb4cf82397aac55f4f0cbd3ca20d77c6c03bedbc4ceaddc08904aef7"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.7"
   fake_async:
     dependency: transitive
     description:
@@ -248,6 +256,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.5.0"
+  oxidized:
+    dependency: "direct main"
+    description:
+      name: oxidized
+      sha256: "5e8b0289f40b14da91159eae30d82c8603bcfaa86c3e15b5aa8f1904a08e3a7b"
+      url: "https://pub.dev"
+    source: hosted
+    version: "6.2.0"
   path:
     dependency: transitive
     description:

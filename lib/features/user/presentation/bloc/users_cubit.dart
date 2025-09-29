@@ -9,6 +9,8 @@ class UsersCubit extends Cubit<UsersState> {
   Future<void> users() async {
     emit(UsersLoadingState());
     final results = await usersUsecase();
-    emit(UsersSuccessState(usersList: results));
+    results.when(
+      ok: (p0) => emit(UsersSuccessState(usersList: p0.data ?? [])),
+      err: (err) => emit(UsersFailureState(message: err.toString())));
   }
 }

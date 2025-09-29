@@ -8,7 +8,7 @@ class UsersInitialState implements UsersState {}
 class UsersLoadingState implements UsersState {}
 
 class UsersSuccessState implements UsersState {
-  final List<UsersEntity> usersList;
+  final List<UserEntityDetail> usersList;
   UsersSuccessState({required this.usersList});
 }
 
