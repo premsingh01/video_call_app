@@ -28,7 +28,7 @@ class ApiClient {
           return handler.next(options);
         },
         onResponse: (response, handler) {
-          print("✅ Response: ${response.statusCode}");
+          print("✅ Response: ${response.data}");
           return handler.next(response);
         },
         onError: (e, handler) {

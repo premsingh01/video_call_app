@@ -3,6 +3,7 @@ import 'package:video_call_app/features/auth/presentation/page/login_view.dart';
 import 'service_locator.dart' as di;
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   di.init();
   runApp(const MyApp());
 }
