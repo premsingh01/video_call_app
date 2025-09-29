@@ -29,26 +29,26 @@ class MyApp extends StatelessWidget {
         inputDecorationTheme: InputDecorationTheme(
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Colors.grey),
+            borderSide:  BorderSide(color: Colors.grey.shade200, width: 1,),
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Colors.blueGrey),
+            borderSide:  BorderSide(color: Colors.grey.shade200, width: 1,),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: const BorderSide(
               color: Color.fromARGB(255, 163, 94, 175),
-              width: 2,
+              width: 1,
             ),
           ),
           errorBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Colors.red),
+            borderSide: const BorderSide(color: Colors.red, width: 1,),
           ),
           focusedErrorBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Colors.red, width: 2),
+            borderSide: const BorderSide(color: Colors.red, width: 1),
           ),
         ),
       ),
