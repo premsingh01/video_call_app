@@ -213,10 +213,10 @@ class _VideocallViewState extends State<VideocallView> {
                       style: TextStyle(fontSize: 14, color: Colors.white70),
                     ),
                     const SizedBox(height: 4),
-                    const SelectableText(
-                      'https://join.example.com/video_call_app_channel',
+                    SelectableText(
+                      'https://join.example.com/${AgoraConfig.channel}',
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 16),
+                      style: const TextStyle(fontSize: 16),
                     ),
                     const SizedBox(height: 24),
                     _joining
