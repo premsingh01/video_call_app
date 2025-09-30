@@ -20,18 +20,25 @@ class _VideocallViewState extends State<VideocallView> {
   bool _videoOff = false;
   bool _isScreenSharing = false;
   bool _engineReady = false;
+  bool _joining = false;
+  bool _remoteVideoOff = false;
 
   @override
   void initState() {
     super.initState();
-    // Create engine synchronously to avoid LateInitializationError in build
-    _engine = createAgoraRtcEngine();
-    _initAgora();
+    // Delay engine creation until user taps Join
   }
 
-  Future<void> _initAgora() async {
+  Future<void> _prepareAndJoin() async {
+    if (_joining || _isJoined) return;
+    setState(() {
+      _joining = true;
+    });
+
     await [Permission.camera, Permission.microphone].request();
 
+    // Create engine synchronously right before initialization
+    _engine = createAgoraRtcEngine();
     await _engine.initialize(const RtcEngineContext(appId: AgoraConfig.appId));
 
     _engine.registerEventHandler(RtcEngineEventHandler(
@@ -43,12 +50,31 @@ class _VideocallViewState extends State<VideocallView> {
       onUserJoined: (RtcConnection connection, int remoteUid, int elapsed) {
         setState(() {
           _remoteUid = remoteUid;
+          _remoteVideoOff = false;
         });
       },
       onUserOffline: (RtcConnection connection, int remoteUid, UserOfflineReasonType reason) {
         setState(() {
           _remoteUid = null;
+          _remoteVideoOff = false;
         });
+      },
+      onRemoteVideoStateChanged: (
+        RtcConnection connection,
+        int remoteUid,
+        RemoteVideoState state,
+        RemoteVideoStateReason reason,
+        int elapsed,
+      ) {
+        if (remoteUid == _remoteUid) {
+          final bool isOff = state == RemoteVideoState.remoteVideoStateStopped ||
+              state == RemoteVideoState.remoteVideoStateFrozen;
+          if (mounted) {
+            setState(() {
+              _remoteVideoOff = isOff;
+            });
+          }
+        }
       },
     ));
 
@@ -69,6 +95,11 @@ class _VideocallViewState extends State<VideocallView> {
         clientRoleType: ClientRoleType.clientRoleBroadcaster,
       ),
     );
+    if (mounted) {
+      setState(() {
+        _joining = false;
+      });
+    }
   }
 
   Future<void> _toggleMic() async {
@@ -126,10 +157,18 @@ class _VideocallViewState extends State<VideocallView> {
   }
 
   Future<void> _endCall() async {
-    await _engine.leaveChannel();
+    if (_engineReady) {
+      await _engine.leaveChannel();
+      await _engine.stopPreview();
+      await _engine.release();
+    }
     setState(() {
       _isJoined = false;
       _remoteUid = null;
+      _engineReady = false;
+      _videoOff = false;
+      _micMuted = false;
+      _isScreenSharing = false;
     });
     if (mounted) {
       Navigator.of(context).maybePop();
@@ -138,8 +177,10 @@ class _VideocallViewState extends State<VideocallView> {
 
   @override
   void dispose() {
-    _engine.stopPreview();
-    _engine.release();
+    if (_engineReady) {
+      _engine.stopPreview();
+      _engine.release();
+    }
     super.dispose();
   }
   @override
@@ -148,11 +189,52 @@ class _VideocallViewState extends State<VideocallView> {
       body: SafeArea(
         child: Stack(
           children: [
+            // Pre-join screen with channel and link and a Join button
+            if (!_engineReady && !_isJoined) Positioned.fill(
+              child: Container(
+                padding: const EdgeInsets.all(20),
+                alignment: Alignment.center,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    const Text(
+                      'Channel',
+                      style: TextStyle(fontSize: 14, color: Colors.white70),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      AgoraConfig.channel,
+                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                    ),
+                    const SizedBox(height: 12),
+                    const Text(
+                      'Link',
+                      style: TextStyle(fontSize: 14, color: Colors.white70),
+                    ),
+                    const SizedBox(height: 4),
+                    const SelectableText(
+                      'https://join.example.com/video_call_app_channel',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 16),
+                    ),
+                    const SizedBox(height: 24),
+                    _joining
+                        ? const CircularProgressIndicator()
+                        : ElevatedButton.icon(
+                            onPressed: _prepareAndJoin,
+                            icon: const Icon(Icons.video_call),
+                            label: const Text('Join Channel'),
+                          ),
+                  ],
+                ),
+              ),
+            ),
             // Remote view full screen
             Positioned.fill(
               child: !_engineReady
                   ? const SizedBox.shrink()
-                  : _remoteUid != null
+                  : _remoteUid != null && !_remoteVideoOff
                       ? AgoraVideoView(
                           controller: VideoViewController.remote(
                             rtcEngine: _engine,
@@ -161,13 +243,26 @@ class _VideocallViewState extends State<VideocallView> {
                           ),
                         )
                       : Container(
-                      color: Colors.black,
-                      alignment: Alignment.center,
-                      child: Text(
-                        _isJoined ? 'Waiting for remote user…' : 'Joining channel…',
-                        style: const TextStyle(color: Colors.white70),
-                      ),
-                    ),
+                          color: Colors.black,
+                          alignment: Alignment.center,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                _remoteUid != null ? Icons.videocam_off : Icons.person,
+                                size: 64,
+                                color: Colors.white54,
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                _remoteUid != null
+                                    ? 'Remote camera disabled'
+                                    : (_isJoined ? 'Waiting for remote user…' : 'Joining channel…'),
+                                style: const TextStyle(color: Colors.white70),
+                              ),
+                            ],
+                          ),
+                        ),
             ),
 
             // Local view PIP top-right
@@ -195,6 +290,7 @@ class _VideocallViewState extends State<VideocallView> {
             ),
 
             // Bottom controls
+            if (_engineReady)
             Positioned(
               left: 0,
               right: 0,
@@ -205,26 +301,26 @@ class _VideocallViewState extends State<VideocallView> {
                   _roundButton(
                     icon: _micMuted ? Icons.mic_off : Icons.mic,
                     color: _micMuted ? Colors.orange : Colors.white,
-                    onPressed: _toggleMic,
+                    onPressed: _engineReady ? _toggleMic : () {},
                   ),
                   const SizedBox(width: 12),
                   _roundButton(
                     icon: _videoOff ? Icons.videocam_off : Icons.videocam,
                     color: _videoOff ? Colors.orange : Colors.white,
-                    onPressed: _toggleVideo,
+                    onPressed: _engineReady ? _toggleVideo : () {},
                   ),
                   const SizedBox(width: 12),
                   _roundButton(
                     icon: _isScreenSharing ? Icons.stop_screen_share : Icons.screen_share,
                     color: _isScreenSharing ? Colors.orange : Colors.white,
-                    onPressed: _toggleScreenShare,
+                    onPressed: _engineReady ? _toggleScreenShare : () {},
                   ),
                   const SizedBox(width: 12),
                   _roundButton(
                     icon: Icons.call_end,
                     bg: Colors.red,
                     color: Colors.white,
-                    onPressed: _endCall,
+                    onPressed: _engineReady ? _endCall : () {},
                   ),
                 ],
               ),
