@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:video_call_app/features/auth/presentation/page/login_view.dart';
+import 'package:video_call_app/local_database/app_database.dart';
 import 'service_locator.dart' as di;
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await AppDatabase.database;
   di.init();
   runApp(const MyApp());
 }

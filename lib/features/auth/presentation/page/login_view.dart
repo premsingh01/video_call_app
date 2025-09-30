@@ -61,7 +61,7 @@ class _LoginViewState extends State<LoginView> {
                         labelText: 'Email',
                         hintText: "test@example.com" ,
                         ),
-                      autovalidateMode: AutovalidateMode.always,
+                      autovalidateMode: AutovalidateMode.onUserInteraction,
                       onTapOutside: (event) => FocusScope.of(context).unfocus(),
                       validator: (value) {
                         if (value == null || value.isEmpty) return 'Enter email';

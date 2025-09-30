@@ -13,6 +13,7 @@ import "package:video_call_app/features/user/data/repository_impl/users_reposito
 import "package:video_call_app/features/user/domain/repository/users_repository.dart";
 import "package:video_call_app/features/user/domain/usecase/users_usecase.dart";
 import "package:video_call_app/features/user/presentation/bloc/users_cubit.dart";
+import "package:video_call_app/local_database/dao/users_dao.dart";
 
 final sl = GetIt.instance;
 
@@ -30,9 +31,11 @@ void init() {
 
   sl.registerLazySingleton<CheckNetworkUtility>(() => CheckNetworkUtility());
   sl.registerLazySingleton<UsersRemoteDatasource>(() => UsersRemoteDatasourceImpl(apiClient: sl()));
-  sl.registerLazySingleton<UsersLocalDatasource>(() => UsersLocalDatasourceImpl());
+  sl.registerLazySingleton<UsersLocalDatasource>(() => UsersLocalDatasourceImpl(usersDao: sl()));
   sl.registerLazySingleton<UsersRepository>(() => UsersRepositoryImpl(usersRemoteDatasource: sl(), usersLocalDatasource: sl(), checkNetworkUtility: sl()));
   sl.registerLazySingleton(() => UsersUsecase(usersRepository: sl()));
   sl.registerFactory<UsersCubit>(() => UsersCubit(usersUsecase: sl()));
+
+  sl.registerLazySingleton<UsersDao>(() => UsersDao());
 
 }

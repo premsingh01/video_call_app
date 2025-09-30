@@ -24,16 +24,11 @@ class UsersRepositoryImpl implements UsersRepository {
       // Try remote API
       final remoteResult = await Result.asyncOf<UsersEntity, Err>(() => usersRemoteDatasource.getUsers());
       if(remoteResult.isOk()) {
+        final users = remoteResult.unwrap();
+        // Persist latest fetched list locally for offline usage
+        await usersLocalDatasource.saveUsers(usersList: users.data ?? []);
         return remoteResult;
       }
-
-      // if (remoteResult.isOk()) {
-      //   // Cache for offline use, then return
-      //   final movies = remoteResult.unwrap();
-      //   // Persist latest fetched list locally for offline usage
-      //   await localDatasource.saveMovies(movies);
-      //   return Result.ok(movies);
-      // }
     }
 
     // If no internet or remote failed → fallback to local DB
