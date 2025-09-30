@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:video_call_app/features/auth/presentation/page/login_view.dart';
+import 'package:video_call_app/features/splash/presentation/page/splash_view.dart';
 import 'package:video_call_app/local_database/app_database.dart';
 import 'service_locator.dart' as di;
 
@@ -57,7 +57,7 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
-      home: LoginView(),
+      home: SplashView(),
     );
   }
 }
